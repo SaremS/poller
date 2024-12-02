@@ -7,17 +7,13 @@
 #include "logging_message.hpp"
 #include "actors/persisting_actor.hpp"
 
+#include "concepts/persister_concepts.hpp"
 
-template<DerivedFromPersister DP>
+
+template<DerivedFromPersister<LoggingMessage> DP>
 class InMemoryLogger: public Logger<DP> {
-public:
-	InMemoryLogger(const unsigned int &maxLogSize) : maxLogSize_(maxLogSize) {}
+	InMemoryLogger(const DP &persister): Logger<DP>(persister) {}
 
-private:
-	std::vector<LogEntry> logEntries_;
-	unsigned int maxLogSize_;
-	mutable std::mutex mutex_;
 };
-
 
 #endif

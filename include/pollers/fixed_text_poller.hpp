@@ -8,12 +8,14 @@
 #include "sinks/sink.hpp"
 #include "settings/fixed_text_settings.hpp"
 
+
+template <DerivedFromPersister<LoggingMessage> DP>
 class FixedTextPoller : Poller {
 public:
 	FixedTextPoller(
 			const FixedTextSettings &settings,
-			std::unique_ptr<Sink> sink,
-			std::unique_ptr<Logger> logger
+			std::shared_ptr<Sink> sink,
+			std::shared_ptr<Logger<DP>> logger
 			) : text_(settings.getText()),
 				sink_(std::move(sink)),
 				logger_(std::move(logger))
@@ -22,8 +24,8 @@ public:
 	void poll() const override;
 private:
 	std::string text_;
-	std::unique_ptr<Sink> sink_;
-	std::unique_ptr<Logger> logger_;
+	std::shared_ptr<Sink> sink_;
+	std::shared_ptr<Logger<DP>> logger_;
 };
 
 #endif

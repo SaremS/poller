@@ -13,15 +13,11 @@
 #include "actor.hpp"
 #include "messages/message.hpp"
 #include "persisters/persister.hpp"
-
-template <typename T>
-concept DerivedFromMessage = std::derived_from<T, Message>
-
-template <typename T>
-concept DerivedFromPersister = std::derived_from<T, Persister>
+#include "concepts/message_concepts.hpp"
+#include "concepts/persister_concepts.hpp"
 
 
-template <DerivedFromMessage DM, DerivedFromPersister DP>
+template <DerivedFromMessage DM, DerivedFromPersister<DM> DP>
 class PersistingActor: public Actor<DM> {
 public:
 	PersistingActor(const DP &persister) : Actor<DM>(), persister_(persister) {
@@ -32,12 +28,12 @@ public:
 
 protected:
 	void executeOnQueueChange(const std::queue<DM> &updatedQueue) const override {
-		persister_.persistQueue(updatedQueue)
+		persister_.persistQueue(updatedQueue);
 	} 
 
 private:
-	DP persister_
-}
+	DP persister_;
+};
 
 
 #endif

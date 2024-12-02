@@ -5,10 +5,7 @@
 #include <type_traits>
 
 #include "messages/message.hpp"
-
-
-template <typename T>
-concept DerivedFromMessage = std::derived_from<T, Message>;
+#include "concepts/message_concepts.hpp"
 
 
 template <DerivedFromMessage DM>

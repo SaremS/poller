@@ -11,10 +11,8 @@
 #include <memory>
 
 #include "messages/message.hpp"
+#include "concepts/message_concepts.hpp"
 
-
-template <typename T>
-concept DerivedFromMessage = std::derived_from<T, Message>
 
 
 template <DerivedFromMessage DM>
@@ -43,24 +41,24 @@ public:
 	void start() {
 		isRunning_ = true;
         workerThread_ = std::thread([this]() {
-            while (running) {
+            while (isRunning_) {
                 DM message;
                 {
                     std::unique_lock<std::mutex> lock(queueMutex_);
-                    queueCv_.wait(lock, [this]() { return !messageQueue_.empty() || !running_; });
+                    queueCv_.wait(lock, [this]() { return !messageQueue_.empty() || !isRunning_; });
                     
-                    if (!running_) return; 
+                    if (!isRunning_) return; 
                     message = messageQueue_.front();
                     messageQueue_.pop();
 					executeOnQueueChange(messageQueue_);
                 }
                 processMessage(message); 
 			}
-        });
+		});
 	}
 
 	void stop() {
-        running_ = false;
+        isRunning_ = false;
         queueCv_.notify_all(); 
         if (workerThread_.joinable()) {
             workerThread_.join(); 
@@ -77,20 +75,20 @@ protected:
 	virtual void processMessage(const DM &message) const = 0;
 
 	void loadIntoQueue(std::queue<DM> &queue) {
-		if (messageQueue.empty()) {
-			messageQueue = queue;
+		if (messageQueue_.empty()) {
+			messageQueue_ = queue;
 		}
 	}
 
 
 private:
-	std::queue<DM> messageQueue;
+	std::queue<DM> messageQueue_;
 
 	std::mutex queueMutex_;
 	std::condition_variable queueCv_;
 	std::thread workerThread_;
 	std::atomic<bool> isRunning_;
-}
+};
 
 
 #endif

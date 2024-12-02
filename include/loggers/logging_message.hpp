@@ -13,7 +13,7 @@ public:
 private:
 	std::string loggingText_;
 
-}
+};
 
 #endif
 
