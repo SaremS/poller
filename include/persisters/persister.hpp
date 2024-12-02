@@ -12,6 +12,9 @@ template <DerivedFromMessage DM>
 class Persister {
 public:
 	virtual ~Persister() = default;
+	void persistQueue(const std::queue<DM> &messageQueue) {
+		persistQueueAsJson(messageQueue);
+	}
 	virtual void persistQueueAsJson(const std::queue<DM> &messageQueue) = 0;
 	virtual std::queue<DM> loadPersistedJsonQueue() const = 0;
 };

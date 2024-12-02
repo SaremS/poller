@@ -22,12 +22,12 @@ class PersistingActor: public Actor<DM> {
 public:
 	PersistingActor(const DP &persister) : Actor<DM>(), persister_(persister) {
 		std::queue<DM> loadedQueue = persister_.loadPersistedJsonQueue();
-		loadIntoQueue(loadedQueue);
+		this->loadIntoQueue(loadedQueue);
 	}
 
 
 protected:
-	void executeOnQueueChange(const std::queue<DM> &updatedQueue) const override {
+	void executeOnQueueChange(const std::queue<DM> &updatedQueue) override {
 		persister_.persistQueue(updatedQueue);
 	} 
 

@@ -13,9 +13,9 @@ class Logger: public PersistingActor<LoggingMessage, DP> {
 public:
 	Logger(const DP &persister): PersistingActor<LoggingMessage, DP>(persister) {}
 	virtual ~Logger() = default;
-	void processLoggingMessage(const LoggingMessage &message) const {
-		this->processMessage(message);
-	}
+
+protected:
+	virtual void processMessage(const LoggingMessage &message) = 0;
 };
 
 #endif

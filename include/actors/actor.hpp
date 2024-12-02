@@ -28,12 +28,12 @@ public:
 		queueCv_.notify_one();
 	}
 
-	size_t getInboxSize() const {
+	size_t getInboxSize() {
 		std::lock_guard<std::mutex> lock(queueMutex_);
 		return messageQueue_.size();
 	}
 
-	bool inboxIsEmpty() const {
+	bool inboxIsEmpty() {
 		std::lock_guard<std::mutex> lock(queueMutex_);
 		return messageQueue_.empty();
 	}
@@ -42,17 +42,17 @@ public:
 		isRunning_ = true;
         workerThread_ = std::thread([this]() {
             while (isRunning_) {
-                DM message;
+				std::unique_ptr<DM> message;
                 {
                     std::unique_lock<std::mutex> lock(queueMutex_);
                     queueCv_.wait(lock, [this]() { return !messageQueue_.empty() || !isRunning_; });
                     
                     if (!isRunning_) return; 
-                    message = messageQueue_.front();
+                    message = std::make_unique<DM>(messageQueue_.front());
                     messageQueue_.pop();
 					executeOnQueueChange(messageQueue_);
                 }
-                processMessage(message); 
+                processMessage(*message); 
 			}
 		});
 	}
@@ -71,8 +71,8 @@ public:
 
 
 protected:
-	virtual void executeOnQueueChange(const std::queue<DM> &updatedQueue) const = 0; 
-	virtual void processMessage(const DM &message) const = 0;
+	virtual void executeOnQueueChange(const std::queue<DM> &updatedQueue)  = 0; 
+	virtual void processMessage(const DM &message) = 0;
 
 	void loadIntoQueue(std::queue<DM> &queue) {
 		if (messageQueue_.empty()) {

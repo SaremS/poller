@@ -7,11 +7,13 @@
 
 class LoggingMessage : public Message {
 public:
-	LoggingMessage(std::string text) : loggingText_(text) {}
-	std::string getAsJsonString() const override;
+	LoggingMessage(std::string text) : logText_(text) {}
+	std::string getAsJsonString() const override {
+		return "{\"log_text\": \"" + logText_ + "\"}";
+	}
 
 private:
-	std::string loggingText_;
+	std::string logText_;
 
 };
 
