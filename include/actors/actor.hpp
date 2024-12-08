@@ -18,7 +18,7 @@
 template <DerivedFromMessage DM>
 class Actor {
 public:
-	Actor() : isRunning_(false) {}
+	Actor(): isRunning_(false) {}
 
 
 	void receiveMessage(const DM &message) {

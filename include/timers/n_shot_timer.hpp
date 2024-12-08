@@ -3,11 +3,21 @@
 
 #include <vector>
 #include <memory>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <atomic>
 
-#include "pollers/poller.hpp"
+
 #include "timers/timer.hpp"
+#include "actors/actor.hpp"
+#include "actors/actor_message_pair.hpp"
+#include "messages/message.hpp"
+#include "concepts/actor_concepts.hpp"
 
-class NShotTimer : public Timer {
+
+template <DerivedFromActor<Message> DA>
+class NShotTimer: public Timer<DA> {
 /*
 	Fire N times, where N>0, with millisecond sleep between calls
 */
@@ -15,11 +25,48 @@ public:
 	NShotTimer(const unsigned int &nTimes, const unsigned int &sleepMilliseconds) 
 		: nTimes_(nTimes),  sleepMilliseconds_(sleepMilliseconds)
 	{};
-	void registerPoller(std::unique_ptr<Poller> poller) override;
-    void start() override;
-	void stop() override;
+
+    void start() override {
+		{
+			std::lock_guard<std::mutex> lock(this->timerMutex_);
+			this->isRunning_ = true;	
+		}
+		this->workerThread_ = std::thread([this] {
+			for (unsigned int i = 0; i < nTimes_; ++i) {
+				{
+					std::lock_guard<std::mutex> lock(this->timerMutex_);
+					if (!this->isRunning_) {
+						break;
+					}
+				}
+				
+				{
+					std::lock_guard<std::mutex> lock(this->timerMutex_);
+					if (this->isRunning_) {
+						for (auto &amp: this->actorMessagePair_) {
+							amp->actorReceiveMessage();				
+						}	
+					}
+				}
+
+				std::this_thread::sleep_for(std::chrono::milliseconds(sleepMilliseconds_));
+			}
+			std::lock_guard<std::mutex> lock(this->timerMutex_);
+			this->isRunning_ = false;
+		});
+	} 
+
+	void stop() override {
+		{
+			std::lock_guard<std::mutex> lock(this->timerMutex_);
+			this->isRunning_ = false;
+		}
+		if (this->workerThread_.joinable()) {
+			this->workerThread_.join();
+		}
+	}
+
 private:
-	std::vector<std::unique_ptr<Poller>> pollers_;
 	unsigned int nTimes_;
 	unsigned int sleepMilliseconds_;
 };
