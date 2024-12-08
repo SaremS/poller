@@ -8,8 +8,14 @@
 #include "concepts/actor_concepts.hpp"
 
 
+class VirtualActorMessagePair {
+public:
+    virtual ~VirtualActorMessagePair() = default;
+    virtual void actorReceiveMessage() = 0; 
+};
+
 template <DerivedFromMessage DM, DerivedFromActor<DM> DA>
-class ActorMessagePair {
+class ActorMessagePair: public VirtualActorMessagePair {
 public:
 	ActorMessagePair(std::unique_ptr<DA> &actor, std::unique_ptr<DM> &message): actor_(std::move(actor)), message_(std::move(message)) {}
 	void actorReceiveMessage() {

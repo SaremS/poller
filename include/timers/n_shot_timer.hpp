@@ -13,11 +13,9 @@
 #include "actors/actor.hpp"
 #include "actors/actor_message_pair.hpp"
 #include "messages/message.hpp"
-#include "concepts/actor_concepts.hpp"
 
 
-template <DerivedFromActor<Message> DA>
-class NShotTimer: public Timer<DA> {
+class NShotTimer: public Timer {
 /*
 	Fire N times, where N>0, with millisecond sleep between calls
 */
@@ -43,7 +41,7 @@ public:
 				{
 					std::lock_guard<std::mutex> lock(this->timerMutex_);
 					if (this->isRunning_) {
-						for (auto &amp: this->actorMessagePair_) {
+						for (auto &amp: this->actorMessagePairs_) {
 							amp->actorReceiveMessage();				
 						}	
 					}

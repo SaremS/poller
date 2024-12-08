@@ -6,16 +6,16 @@
 #include "actors/actor.hpp"
 #include "actors/actor_message_pair.hpp"
 #include "messages/message.hpp"
-#include "concepts/actor_concepts.hpp"
 
 
-template <DerivedFromActor<Message> DA>
 class Timer {
 public:
     virtual ~Timer() {
-		stop();
+		if (isRunning_) {
+			stopTimer();
+		}
 	};
-	virtual void registerActorMessagePair(const std::unique_ptr<ActorMessagePair<DA, Message> > &actMes) {
+	virtual void registerActorMessagePair(std::unique_ptr<VirtualActorMessagePair> actMes) {
 		std::lock_guard<std::mutex> lock(timerMutex_);		 
 		actorMessagePairs_.push_back(std::move(actMes));
 	}
@@ -23,7 +23,10 @@ public:
 	virtual void stop() = 0;
 
 protected:
-	std::vector<std::unique_ptr<ActorMessagePair<DA, Message> >> actorMessagePairs_;
+	void stopTimer() {
+		stop();
+	}
+	std::vector<std::unique_ptr<VirtualActorMessagePair>> actorMessagePairs_;
 	std::atomic<bool> isRunning_;
 	std::mutex timerMutex_;
 	std::thread workerThread_;
