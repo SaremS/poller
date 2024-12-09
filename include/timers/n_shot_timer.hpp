@@ -24,7 +24,9 @@ public:
 		: nTimes_(nTimes),  sleepMilliseconds_(sleepMilliseconds)
 	{};
 
-    void start() override {
+
+protected:
+    void startFn() override {
 		{
 			std::lock_guard<std::mutex> lock(this->timerMutex_);
 			this->isRunning_ = true;	
@@ -54,7 +56,7 @@ public:
 		});
 	} 
 
-	void stop() override {
+	void stopFn() override {
 		{
 			std::lock_guard<std::mutex> lock(this->timerMutex_);
 			this->isRunning_ = false;
