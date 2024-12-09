@@ -18,19 +18,14 @@ typedef ActorMessagePair<LoggingMessage, InMemoryLogger<InMemoryPersister<Loggin
 TEST(NShotTimer, RunTimer) {
 	InMemoryPersister<LoggingMessage> persister;
     auto logger = std::make_unique<InMemoryLogger<InMemoryPersister<LoggingMessage>>>(persister);
-	logger->start();
 	auto message = std::make_unique<LoggingMessage>("TEST"); 
 
-	LogAmp amp(logger, message);
+	auto amp = std::make_unique<LogAmp>(logger, message);
 	
-	NShotTimer<Actor<Message>> timer(1, 50);
-	/*
-	timer.registerActorMessagePair(std::make_unique(amp));
+	NShotTimer timer(1, 50);
+	timer.registerActorMessagePair(std::move(amp));
 
 	timer.start();
 	std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	timer.stop();
-	logger.stop();
-
-	EXPECT_EQ(logger.getInMemoryLogs().size(), 1);*/	
 }

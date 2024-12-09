@@ -38,6 +38,7 @@ public:
 		return messageQueue_.empty();
 	}
 
+
 	void start() {
 		isRunning_ = true;
         workerThread_ = std::thread([this]() {
