@@ -7,10 +7,16 @@
 
 class SinkMessage: public Message {
 public:
-	std::string getAsJsonString() const override;
+	SinkMessage(const std::string &jsonRepresentation, const std::string &jsonTypes): 
+		jsonRepresentation_(jsonRepresentation), jsonTypes_(jsonTypes) {}
+
+	std::string getAsJsonString() const override {
+		return jsonRepresentation_;
+	}
 
 private:
 	std::string jsonRepresentation_;
+	std::string jsonTypes_;
 }
 
 
